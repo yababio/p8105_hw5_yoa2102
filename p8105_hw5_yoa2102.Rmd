@@ -24,13 +24,19 @@ scale_fill_discrete = scale_fill_viridis_d
 
 ## Problem 1
 
-#### Describe the raw data
+#### Read in and describe the raw data
+```{r}
+homicide_df = 
+  read_csv("data/homicide-data.csv")
+```
+The Washington Post dataset contains information about `r nrow(homicide_df)` homicides that occurred in 50 large US cities between the years 2007 and 2017. This dataset contains `r ncol(homicide_df)` variables that describe the date of the homicide, location of the homicide, characteristics of the victim, and status of the case related to the homicide. These variables are as follows: `r names(homicide_df)`.
 
-The Washington Post dataset contains information about `r nrow(homicide_df)` homicides that occured in 50 large US cities between the years 2007 and 2015. This dataset contains `r ncol(homicide_df)` that describe the date of the homicide, location of the homicide, characteristics of the victim, and status of the case related to the homicide. These variables are as follows: `r names(homicide_df)`.
+
+#### Create `city_state` variable and `resolved` variable
 
 ```{r}
 homicide_df = 
-  read_csv("data/homicide-data.csv") %>% 
+homicide_df %>% 
   mutate(
     city_state = str_c(city, state, sep = "_"),
     resolved = case_when(
@@ -44,7 +50,7 @@ homicide_df =
 ```
 
 
-Let's look at this a bit
+#### Summarize within cities to obtain total number of homicides and unsolved homicides. 
 
 ```{r}
 aggregate_df = 
@@ -54,9 +60,13 @@ aggregate_df =
     hom_total = n(),
     hom_unsolved = sum(resolved == "unsolved")
   )
+
+aggregate_df %>%
+ knitr::kable()
 ```
 
-Can I do a prop test for a single city?
+
+#### Use `prop.test` function to estimate proportion of unsolved homicides, save output as an R object, and pull the estimated proportion and confidence intervals from tidy dataframe using `broom::tidy`.
 
 ```{r}
 prop.test(
@@ -65,7 +75,8 @@ prop.test(
   broom::tidy()
 ```
 
-Try to iterate ........
+
+#### Run `prop.test` for each of the cities, and extract both the proportion of unsolved homicides and the confidence interval for each. 
 
 ```{r}
 results_df = 
@@ -80,7 +91,7 @@ results_df =
 ```
 
 
-
+#### Create a plot that shows the estimates and CIs for reach city.
 ```{r}
 results_df %>% 
   mutate(city_state = fct_reorder(city_state, estimate)) %>% 
@@ -92,52 +103,26 @@ results_df %>%
 
 
 
-```{r, error = TRUE}
-city_prop_test = function(df) {
-  
-  n_unsovled ...
-  n_total ... 
-  
-  prop.test(.....)
-  
-}
-homicide_df = 
-  read_csv("data/homicide-data.csv") %>% 
-  mutate(
-    city_state = str_c(city, state, sep = "_"),
-    resolved = case_when(
-      disposition == "Closed without arrest" ~ "unsolved",
-      disposition == "Open/No arrest"        ~ "unsolved",
-      disposition == "Closed by arrest"      ~ "solved",
-    )
-  ) %>% 
-  select(city_state, resolved) %>% 
-  filter(city_state != "Tulsa_AL") %>% 
-  nest(data = resolved)
-```
 
 
-
-
-
-## Problem 2 ideas ...
+## Problem 2 
 
 
 import one dataset 
 
 ```{r}
-data_1 = read_csv("lda_data/con_01.csv")
+#data_1 = read_csv("lda_data/con_01.csv")
 ```
 
 ```{r, error = TRUE}
-path_df = 
-  tibble(
-    path = list.files("lda_data"),
-  ) %>% 
-  mutate(
-    path = str_c("lda_data/", path),
-    data = map(.............))
-read_csv(path_df$path[[1]])
+#path_df = 
+  #tibble(
+    #path = list.files("lda_data"),
+  #) %>% 
+  #mutate(
+   # path = str_c("lda_data/", path),
+   # data = map(.............))
+#read_csv(path_df$path[[1]])
 ```
 
 
