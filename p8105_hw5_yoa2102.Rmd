@@ -1,21 +1,143 @@
 ---
-title: "Simple document"
-output: html_document
+title: "Homework 5"
+author: Yaa Ababio
+output: github_document
 ---
 
-I'm an R Markdown document! 
 
-# Section 1
-
-Here's a **code chunk** that samples from 
-a _normal distribution_:
-
-```{r}
-samp = rnorm(100)
-length(samp)
+```{r setup, include = FALSE}
+library(tidyverse)
+knitr::opts_chunk$set(
+  fig.width = 6,
+  fig.asp = .6,
+  out.width = "90%"
+)
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+scale_colour_discrete = scale_color_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
 ```
 
-# Section 2
 
-I can take the mean of the sample, too!
-The mean is `r mean(samp)`.
+## Problem 1
+
+#### Describe the raw data
+
+The Washington Post dataset contains information about `r nrow(homicide_df)` homicides that occured in 50 large US cities between the years 2007 and 2015. This dataset contains `r ncol(homicide_df)` that describe the date of the homicide, location of the homicide, characteristics of the victim, and status of the case related to the homicide. These variables are as follows: `r names(homicide_df)`.
+
+```{r}
+homicide_df = 
+  read_csv("data/homicide-data.csv") %>% 
+  mutate(
+    city_state = str_c(city, state, sep = "_"),
+    resolved = case_when(
+      disposition == "Closed without arrest" ~ "unsolved",
+      disposition == "Open/No arrest"        ~ "unsolved",
+      disposition == "Closed by arrest"      ~ "solved",
+    )
+  ) %>% 
+  select(city_state, resolved) %>% 
+  filter(city_state != "Tulsa_AL")
+```
+
+
+Let's look at this a bit
+
+```{r}
+aggregate_df = 
+  homicide_df %>% 
+  group_by(city_state) %>% 
+  summarize(
+    hom_total = n(),
+    hom_unsolved = sum(resolved == "unsolved")
+  )
+```
+
+Can I do a prop test for a single city?
+
+```{r}
+prop.test(
+  aggregate_df %>% filter(city_state == "Baltimore_MD") %>% pull(hom_unsolved), 
+  aggregate_df %>% filter(city_state == "Baltimore_MD") %>% pull(hom_total)) %>% 
+  broom::tidy()
+```
+
+Try to iterate ........
+
+```{r}
+results_df = 
+  aggregate_df %>% 
+  mutate(
+    prop_tests = map2(.x = hom_unsolved, .y = hom_total, ~prop.test(x = .x, n = .y)),
+    tidy_tests = map(.x = prop_tests, ~broom::tidy(.x))
+  ) %>% 
+  select(-prop_tests) %>% 
+  unnest(tidy_tests) %>% 
+  select(city_state, estimate, conf.low, conf.high)
+```
+
+
+
+```{r}
+results_df %>% 
+  mutate(city_state = fct_reorder(city_state, estimate)) %>% 
+  ggplot(aes(x = city_state, y = estimate)) +
+  geom_point() + 
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high)) + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+```
+
+
+
+```{r, error = TRUE}
+city_prop_test = function(df) {
+  
+  n_unsovled ...
+  n_total ... 
+  
+  prop.test(.....)
+  
+}
+homicide_df = 
+  read_csv("data/homicide-data.csv") %>% 
+  mutate(
+    city_state = str_c(city, state, sep = "_"),
+    resolved = case_when(
+      disposition == "Closed without arrest" ~ "unsolved",
+      disposition == "Open/No arrest"        ~ "unsolved",
+      disposition == "Closed by arrest"      ~ "solved",
+    )
+  ) %>% 
+  select(city_state, resolved) %>% 
+  filter(city_state != "Tulsa_AL") %>% 
+  nest(data = resolved)
+```
+
+
+
+
+
+## Problem 2 ideas ...
+
+
+import one dataset 
+
+```{r}
+data_1 = read_csv("lda_data/con_01.csv")
+```
+
+```{r, error = TRUE}
+path_df = 
+  tibble(
+    path = list.files("lda_data"),
+  ) %>% 
+  mutate(
+    path = str_c("lda_data/", path),
+    data = map(.............))
+read_csv(path_df$path[[1]])
+```
+
+
