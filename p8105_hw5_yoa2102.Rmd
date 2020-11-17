@@ -137,7 +137,12 @@ path_df %>%
     names_to = "week",
     names_prefix = "week_",
     values_to = "observations"
+  ) %>%
+  mutate(
+    week = as.numeric(week),
+    subject_id = as.numeric(subject_id)
   )
+  
 ```
 
 
@@ -158,7 +163,7 @@ ggplot(aes(week, observations, group = subject_id, color = subject_id)) +
   facet_grid(~arm) 
 ```
 
-
+The spaghetti plot indicates that the observation values for individuals in the control arm remain relatively constant over the 8 week-period, whereas the values for individuals in the experimental arm gradually increase, on average. 
 
 
 ## Problem 3
